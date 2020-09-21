@@ -36,7 +36,6 @@ func getCurrPrices(info ExchangeInfo) {
 	defer timeTrack(time.Now(), "getCurrPrices")
 	var wg sync.WaitGroup
 	for _, name := range info.Symbols {
-		//fmt.Printf("%s %f\n",name.Symbol, getPrice(name.Symbol))
 		wg.Add(1)
 		go getPrice(name.Symbol, &wg)
 	}
@@ -102,46 +101,14 @@ type Symbol struct {
 }
 
 func main() {
-	/*var (
-		apiKey = "a9aKL2kh01NABxvpRCYp2D7CpspMMLimbT0g7gPflj6XyQfgBHnxRWxzBVopRt8o"
-		secret = "8qCnG7WPKYBSPqFdVZDIlKhkEsP7WFhQLbCnoGnDpcDLtnu54VvhGyutD05tCJ4o"
-	)*/
-	//res, _ := http.Get("https://api.binance.com/api/v3/ticker/price?symbol=LTCBTC")
-	/*exInfo, err := getExchangeInfo()
-	//TODO: maybe use decoder
-	if err != nil {
-		print(err.Error())
-		print("Run")
-		for _, val := range exInfo.Symbols {
-			println(val.Symbol)
-		}
-	}*/
-	//fmt.Printf("%v",getPrice("ETHBTC"))
+
 	exInfo, err := getExchangeInfo()
 	if err != nil {
 		println(err.Error())
 
 	}
 	getCurrPrices(exInfo)
-	//fmt.Printf("%f",priceMap["LTCBTC"])
 	for key, value := range priceMap {
 		fmt.Printf("%v, %f\n", key, value)
 	}
-	/*for _,symbol := range exInfo.timezone{
-		print(symbol)
-		//print(string(i.baseAsset),"\n")
-	}*/
-
-	/*if err != nil{
-		fmt.Printf("", err,"\n")
-	}*/
-	/*buf := new(bytes.Buffer)
-	_ ,err := buf.ReadFrom(res.Body)
-	if err != nil{
-		print(err)
-	}
-
-	outStr := buf.String()
-	fmt.Printf(outStr)*/
-
 }
