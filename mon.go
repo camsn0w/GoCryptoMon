@@ -1,25 +1,16 @@
-package main
+package GoCryptoMon
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	"sync"
-	"time"
 )
 
 var mutex = sync.Mutex{}
 var priceMap = make(map[string]float64)
 
-func timeTrack(start time.Time, name string) {
-	elapsed := time.Since(start)
-	log.Printf("%s took %s", name, elapsed)
-}
-
 func getExchangeInfo() (ExchangeInfo, error) {
 	res, err := http.Get("https://api.binance.com/api/v3/exchangeInfo")
-	//TODO: Fill request body
 	if err != nil {
 		return ExchangeInfo{}, err
 	}
@@ -33,20 +24,23 @@ func getExchangeInfo() (ExchangeInfo, error) {
 }
 
 func getCurrPrices(info ExchangeInfo) {
-	defer timeTrack(time.Now(), "getCurrPrices")
 	var wg sync.WaitGroup
 	for _, name := range info.Symbols {
 		wg.Add(1)
-		go getPrice(name.Symbol, &wg)
+		go getCurrPriceHelper(name.Symbol, &wg)
 	}
 
 	wg.Wait()
 }
 
-func getPrice(coinPair string, wg *sync.WaitGroup) {
+func getCurrPriceHelper(coinPair string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	getPrice(coinPair)
+}
+
+func getPrice(coinPair string) {
 	currLink := "https://api.binance.com/api/v3/avgPrice?symbol=" + coinPair
 	res, err := http.Get(currLink)
-	defer wg.Done()
 	if err != nil {
 		println(err.Error())
 		priceMap[coinPair] = -420
@@ -77,14 +71,12 @@ type ExchangeInfo struct {
 	Symbols         []Symbol      `json:"symbols"`
 }
 
-// RateLimit struct
 type RateLimit struct {
 	RateLimitType string `json:"rateLimitType"`
 	Interval      string `json:"interval"`
 	Limit         int64  `json:"limit"`
 }
 
-// Symbol market symbol
 type Symbol struct {
 	Symbol                 string                   `json:"symbol"`
 	Status                 string                   `json:"status"`
@@ -98,17 +90,4 @@ type Symbol struct {
 	IsSpotTradingAllowed   bool                     `json:"isSpotTradingAllowed"`
 	IsMarginTradingAllowed bool                     `json:"isMarginTradingAllowed"`
 	Filters                []map[string]interface{} `json:"filters"`
-}
-
-func main() {
-
-	exInfo, err := getExchangeInfo()
-	if err != nil {
-		println(err.Error())
-
-	}
-	getCurrPrices(exInfo)
-	for key, value := range priceMap {
-		fmt.Printf("%v, %f\n", key, value)
-	}
 }
