@@ -9,7 +9,7 @@ import (
 var mutex = sync.Mutex{}
 var priceMap = make(map[string]float64)
 
-func getExchangeInfo() (ExchangeInfo, error) {
+func GetExchangeInfo() (ExchangeInfo, error) {
 	res, err := http.Get("https://api.binance.com/api/v3/exchangeInfo")
 	if err != nil {
 		return ExchangeInfo{}, err
@@ -23,7 +23,7 @@ func getExchangeInfo() (ExchangeInfo, error) {
 	return exInfo, err
 }
 
-func getCurrPrices(info ExchangeInfo) {
+func GetCurrPrices(info ExchangeInfo) {
 	var wg sync.WaitGroup
 	for _, name := range info.Symbols {
 		wg.Add(1)
@@ -35,10 +35,10 @@ func getCurrPrices(info ExchangeInfo) {
 
 func getCurrPriceHelper(coinPair string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	getPrice(coinPair)
+	GetPrice(coinPair)
 }
 
-func getPrice(coinPair string) {
+func GetPrice(coinPair string) {
 	currLink := "https://api.binance.com/api/v3/avgPrice?symbol=" + coinPair
 	res, err := http.Get(currLink)
 	if err != nil {
