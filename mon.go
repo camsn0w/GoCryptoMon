@@ -1,4 +1,4 @@
-package GoCryptoMon
+package gocryptomon
 
 import (
 	"encoding/json"
